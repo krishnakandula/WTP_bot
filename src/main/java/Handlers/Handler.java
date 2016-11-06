@@ -1,5 +1,6 @@
 package Handlers;
 
+import Config.BotConfig;
 import Tasks.GetPokemonTask;
 import org.telegram.telegrambots.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.api.objects.Message;
@@ -10,10 +11,9 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
  * Created by Krishna Chaitanya Kandula on 11/5/2016.
  */
 public class Handler extends TelegramLongPollingBot {
-    private static final String TOKEN = "270042279:AAELkYg0IyMYFPmfJ4zO5CGh6Sl0Pd-NX-M";
     @Override
     public String getBotToken() {
-        return TOKEN;
+        return BotConfig.BOT_TOKEN;
     }
 
     public void onUpdateReceived(Update update) {
