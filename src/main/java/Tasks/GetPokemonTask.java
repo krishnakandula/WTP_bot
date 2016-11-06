@@ -1,5 +1,10 @@
 package Tasks;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONString;
+import org.telegram.telegrambots.api.methods.ActionType;
+import org.telegram.telegrambots.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -13,7 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Created by krish on 11/5/2016.
+ * Created by Krishna Chaitanya Kandula on 11/5/2016.
  */
 public class GetPokemonTask implements Runnable {
     private Message message;
@@ -29,8 +34,16 @@ public class GetPokemonTask implements Runnable {
     public void run() {
         //Parse message to get pokemon
         parseMessage();
-        if(hasPokemon)
+        if(hasPokemon) {
+            SendChatAction chatAction = new SendChatAction();
+            chatAction.setChatId(message.getChatId().toString()).setAction(ActionType.TYPING);
+            try {
+                bot.sendChatAction(chatAction);
+            } catch (TelegramApiException e){
+                System.out.println(e.getMessage());
+            }
             getDataWithNameOrId(pokemonName);
+        }
     }
 
     private void parseMessage(){
@@ -44,7 +57,23 @@ public class GetPokemonTask implements Runnable {
     }
 
     private void parseResponse(String jsonString){
+        final String formsArrKey = "forms";
+        final String pokemonNameKey = "name";
+        final String abilityArrKey = "abilities";
+        final String abilityObjKey = "ability";
+        final String abilityNameKey = "name";
 
+        JSONObject mainObj = new JSONObject(jsonString);
+        String nameString = mainObj.getJSONArray(formsArrKey).getJSONObject(0).getString(pokemonNameKey);
+        JSONArray abilitiesObj = mainObj.getJSONArray(abilityArrKey);
+        String abilityString = abilitiesObj.getJSONObject(1).getJSONObject(abilityObjKey).getString(abilityNameKey);
+        String hiddenAbilityString = abilitiesObj.getJSONObject(0).getJSONObject(abilityObjKey).getString(abilityNameKey);
+
+        String responseStr = String.format(nameString + "\n"
+                                            + "Ability: %s\n"
+                                            + "Hidden Ability: %s", abilityString, hiddenAbilityString);
+
+        sendResponse(responseStr);
     }
 
     private void sendResponse(String response){
@@ -56,8 +85,8 @@ public class GetPokemonTask implements Runnable {
         } catch (TelegramApiException e){
             System.out.println(e.getMessage());
         }
-
     }
+
     private void getDataWithNameOrId(String name){
         StringBuilder BASE_URL = new StringBuilder("https://www.pokeapi.co/api/v2/pokemon/");
         BASE_URL.append(name.toLowerCase() + "/");
@@ -88,6 +117,4 @@ public class GetPokemonTask implements Runnable {
             hasPokemon = false;
         }
     }
-
-
 }
