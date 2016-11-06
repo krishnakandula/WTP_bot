@@ -1,4 +1,7 @@
-*Intellij files
+#Config files
+*BotConfig.java
+
+#Intellij files
 *.idea/
 *.idea
 *.iml
