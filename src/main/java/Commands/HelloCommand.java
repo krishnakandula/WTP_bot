@@ -12,15 +12,16 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
  */
 public class HelloCommand extends BotCommand {
 
-    public HelloCommand(String commandIdentifier, String description) {
+    public HelloCommand() {
         super("hello", "say hi to the bot!");
     }
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
+        String response = String.format("Hello %s!", user.getFirstName());
         SendMessage message = new SendMessage();
         message.setChatId(chat.getId().toString());
-        message.setText("Hello!");
+        message.setText(response);
         try{
             absSender.sendMessage(message);
         } catch (TelegramApiException e){

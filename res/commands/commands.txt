@@ -1,0 +1,4 @@
+help - get help
+search - search for a Pokémon
+hello - say hi to the bot!
+author - the author of this bot

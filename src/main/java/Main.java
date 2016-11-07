@@ -1,3 +1,4 @@
+import Handlers.CommandsHandler;
 import Handlers.Handler;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
@@ -12,7 +13,8 @@ public class Main {
         System.setProperty("http.agent", "Chrome");
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try{
-            telegramBotsApi.registerBot(new Handler());
+            telegramBotsApi.registerBot(new CommandsHandler());
+//            telegramBotsApi.registerBot(new Handler());
         } catch (TelegramApiException e){
             BotLogger.error(Main.class.getSimpleName(), e);
         }
