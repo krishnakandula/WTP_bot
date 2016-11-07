@@ -17,15 +17,15 @@ public class Handler extends TelegramLongPollingBot {
     }
 
     public void onUpdateReceived(Update update) {
-        if(update.hasMessage()){
-            Message message = update.getMessage();
-            if(message.hasText()){
-                GetPokemonTask getPokemonTask = new GetPokemonTask(message, this);
-                Thread thread = new Thread(getPokemonTask);
-                thread.start();
-
-            }
-        }
+//        if(update.hasMessage()){
+//            Message message = update.getMessage();
+//            if(message.hasText()){
+//                GetPokemonTask getPokemonTask = new GetPokemonTask(message, this);
+//                Thread thread = new Thread(getPokemonTask);
+//                thread.start();
+//
+//            }
+//        }
     }
 
     public String getBotUsername() {

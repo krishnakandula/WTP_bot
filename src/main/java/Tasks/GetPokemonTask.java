@@ -6,9 +6,12 @@ import org.json.JSONString;
 import org.telegram.telegrambots.api.methods.ActionType;
 import org.telegram.telegrambots.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.objects.Chat;
 import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.bots.AbsSender;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
+import org.telegram.telegrambots.logging.BotLogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,42 +24,28 @@ import java.net.URL;
  * Created by Krishna Chaitanya Kandula on 11/5/2016.
  */
 public class GetPokemonTask implements Runnable {
-    private Message message;
-    public boolean hasPokemon;
     private String pokemonName;
-    private TelegramLongPollingBot bot;
+    private String chatId;
+    private AbsSender absSender;
 
-    public GetPokemonTask(Message message, TelegramLongPollingBot bot){
-        this.message = message;
-        this.bot = bot;
+    private static final String LOG_TAG = GetPokemonTask.class.getSimpleName();
+
+    public GetPokemonTask(String pokemonName, String chatId, AbsSender absSender){
+        this.pokemonName = pokemonName;
+        this.absSender = absSender;
+        this.chatId = chatId;
     }
 
     public void run() {
-        //Parse message to get pokemon
-        parseMessage();
-        if(hasPokemon) {
-            SendChatAction chatAction = new SendChatAction();
-            chatAction.setChatId(message.getChatId().toString()).setAction(ActionType.TYPING);
-            try {
-                bot.sendChatAction(chatAction);
-            } catch (TelegramApiException e){
-                System.out.println(e.getMessage());
-            }
-            getDataWithNameOrId(pokemonName);
-        }
+        SendChatAction chatAction = new SendChatAction();
+        chatAction.setChatId(chatId).setAction(ActionType.TYPING);
+        try {
+            absSender.sendChatAction(chatAction);
+        } catch (TelegramApiException e){System.out.println(e.getMessage());}
+        getDataWithNameOrId(pokemonName);
     }
 
-    private void parseMessage(){
-        String pattern = "/pokemon ";
-        if(message.getText().length() <= pattern.length()) {
-            hasPokemon = false;
-            return;
-        }
-        hasPokemon = true;
-        pokemonName = message.getText().substring(pattern.length());
-    }
-
-    private void parseResponse(String jsonString){
+    private String parseResponse(String jsonString){
         final String formsArrKey = "forms";
         final String pokemonNameKey = "name";
         final String abilityArrKey = "abilities";
@@ -69,28 +58,28 @@ public class GetPokemonTask implements Runnable {
         String abilityString = abilitiesObj.getJSONObject(1).getJSONObject(abilityObjKey).getString(abilityNameKey);
         String hiddenAbilityString = abilitiesObj.getJSONObject(0).getJSONObject(abilityObjKey).getString(abilityNameKey);
 
-        String responseStr = String.format(nameString + "\n"
+        String responseStr = String.format(formatJsonString(nameString) + "\n"
                                             + "Ability: %s\n"
-                                            + "Hidden Ability: %s", abilityString, hiddenAbilityString);
+                                            + "Hidden Ability: %s",
+                                            formatJsonString(abilityString), formatJsonString(hiddenAbilityString));
 
-        sendResponse(responseStr);
+        return responseStr;
     }
 
     private void sendResponse(String response){
         SendMessage sendMessageRequest = new SendMessage();
-        sendMessageRequest.setChatId(message.getChatId().toString());
+        sendMessageRequest.setChatId(chatId);
         sendMessageRequest.setText(response);
         try {
-            bot.sendMessage(sendMessageRequest);
+            absSender.sendMessage(sendMessageRequest);
         } catch (TelegramApiException e){
-            System.out.println(e.getMessage());
+            BotLogger.error(e.getMessage(), LOG_TAG, e);
         }
     }
 
     private void getDataWithNameOrId(String name){
         StringBuilder BASE_URL = new StringBuilder("https://www.pokeapi.co/api/v2/pokemon/");
         BASE_URL.append(name.toLowerCase() + "/");
-        System.out.println(BASE_URL.toString());
         try {
             URL url = new URL(BASE_URL.toString());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -107,14 +96,20 @@ public class GetPokemonTask implements Runnable {
             while((line = reader.readLine()) != null)
                 jsonBody.append(line);
 
-            parseResponse(jsonBody.toString());
+            sendResponse(parseResponse(jsonBody.toString()));
             connection.disconnect();
         } catch (IOException e){
-            System.out.println(e.getMessage());
-            hasPokemon = false;
+            //TODO: Replace souts with BotLogger
+            sendResponse("Error getting data. Please try again later.");
+            BotLogger.error(e.getMessage(), LOG_TAG, e);
         } catch (RuntimeException e){
-            System.out.println(e.getMessage());
-            hasPokemon = false;
+            sendResponse("Error getting data.");
+            BotLogger.error(e.getMessage(), LOG_TAG, e);
         }
+    }
+
+    private String formatJsonString(String str){
+        str = str.substring(0, 1).toUpperCase().concat(str.substring(1));
+        return str;
     }
 }
