@@ -44,6 +44,9 @@ public class GetPokemonTask implements Runnable {
             absSender.sendChatAction(chatAction);
         } catch (TelegramApiException e){System.out.println(e.getMessage());}
         getDataWithNameOrId(pokemonName);
+        String jsonResponse = getDataWithNameOrId(pokemonName);
+        if(jsonResponse != null)
+            parseResponse(jsonResponse);
     }
 
     private void parseResponse(String jsonString){
@@ -97,7 +100,7 @@ public class GetPokemonTask implements Runnable {
         }
     }
 
-    private void getDataWithNameOrId(String name){
+    private String getDataWithNameOrId(String name){
         StringBuilder BASE_URL = new StringBuilder("https://www.pokeapi.co/api/v2/pokemon/");
         BASE_URL.append(name.toLowerCase() + "/");
         try {
@@ -116,8 +119,8 @@ public class GetPokemonTask implements Runnable {
             while((line = reader.readLine()) != null)
                 jsonBody.append(line);
 
-            parseResponse(jsonBody.toString());
             connection.disconnect();
+            return jsonBody.toString();
         } catch (IOException e){
             sendResponse("Error getting data. Please try again later");
             BotLogger.error(e.getMessage(), LOG_TAG, e);
@@ -125,6 +128,7 @@ public class GetPokemonTask implements Runnable {
             sendResponse("Error getting data");
             BotLogger.error(e.getMessage(), LOG_TAG, e);
         }
+        return null;
     }
 
     private String formatJsonString(String str){
