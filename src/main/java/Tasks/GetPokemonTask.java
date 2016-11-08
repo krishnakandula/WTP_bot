@@ -6,6 +6,7 @@ import org.json.JSONString;
 import org.telegram.telegrambots.api.methods.ActionType;
 import org.telegram.telegrambots.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.objects.Chat;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.bots.AbsSender;
@@ -45,7 +46,7 @@ public class GetPokemonTask implements Runnable {
         getDataWithNameOrId(pokemonName);
     }
 
-    private String parseResponse(String jsonString){
+    private void parseResponse(String jsonString){
         final String formsArrKey = "forms";
         final String pokemonNameKey = "name";
         final String abilityArrKey = "abilities";
@@ -57,13 +58,22 @@ public class GetPokemonTask implements Runnable {
         JSONArray abilitiesObj = mainObj.getJSONArray(abilityArrKey);
         String abilityString = abilitiesObj.getJSONObject(1).getJSONObject(abilityObjKey).getString(abilityNameKey);
         String hiddenAbilityString = abilitiesObj.getJSONObject(0).getJSONObject(abilityObjKey).getString(abilityNameKey);
+        JSONArray typesArr = mainObj.getJSONArray("types");
 
+        //Get types
+        StringBuilder typesStringBuilder = new StringBuilder();
+        for(int i = 0; i < typesArr.length(); i++)
+            typesStringBuilder.append(formatJsonString(typesArr.getJSONObject(i).getJSONObject("type").getString("name")) + " ");
+        String spriteUrl = mainObj.getJSONObject("sprites").getString("front_default");
         String responseStr = String.format(formatJsonString(nameString) + "\n"
+                                            + "Type: %s\n"
                                             + "Ability: %s\n"
                                             + "Hidden Ability: %s",
-                                            formatJsonString(abilityString), formatJsonString(hiddenAbilityString));
+                                            typesStringBuilder.toString(), formatJsonString(abilityString),
+                                            formatJsonString(hiddenAbilityString));
 
-        return responseStr;
+        sendResponse(responseStr);
+        sendSpriteResponse(spriteUrl);
     }
 
     private void sendResponse(String response){
@@ -74,6 +84,16 @@ public class GetPokemonTask implements Runnable {
             absSender.sendMessage(sendMessageRequest);
         } catch (TelegramApiException e){
             BotLogger.error(e.getMessage(), LOG_TAG, e);
+        }
+    }
+
+    private void sendSpriteResponse(String spriteUrl){
+        SendPhoto sendSprite = new SendPhoto();
+        sendSprite.setChatId(chatId).setPhoto(spriteUrl);
+        try{
+            absSender.sendPhoto(sendSprite);
+        } catch (TelegramApiException e){
+            BotLogger.error(LOG_TAG, e.getMessage(), e);
         }
     }
 
@@ -96,14 +116,13 @@ public class GetPokemonTask implements Runnable {
             while((line = reader.readLine()) != null)
                 jsonBody.append(line);
 
-            sendResponse(parseResponse(jsonBody.toString()));
+            parseResponse(jsonBody.toString());
             connection.disconnect();
         } catch (IOException e){
-            //TODO: Replace souts with BotLogger
-            sendResponse("Error getting data. Please try again later.");
+            sendResponse("Error getting data. Please try again later");
             BotLogger.error(e.getMessage(), LOG_TAG, e);
         } catch (RuntimeException e){
-            sendResponse("Error getting data.");
+            sendResponse("Error getting data");
             BotLogger.error(e.getMessage(), LOG_TAG, e);
         }
     }
