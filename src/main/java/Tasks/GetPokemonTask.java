@@ -62,18 +62,28 @@ public class GetPokemonTask implements Runnable {
         String abilityString = abilitiesObj.getJSONObject(1).getJSONObject(abilityObjKey).getString(abilityNameKey);
         String hiddenAbilityString = abilitiesObj.getJSONObject(0).getJSONObject(abilityObjKey).getString(abilityNameKey);
         JSONArray typesArr = mainObj.getJSONArray("types");
+        JSONArray statsArr = mainObj.getJSONArray("stats");
 
         //Get types
         StringBuilder typesStringBuilder = new StringBuilder();
         for(int i = 0; i < typesArr.length(); i++)
             typesStringBuilder.append(formatJsonString(typesArr.getJSONObject(i).getJSONObject("type").getString("name")) + " ");
         String spriteUrl = mainObj.getJSONObject("sprites").getString("front_default");
+
+        //Get stats
+        StringBuilder statsStringBuilder = new StringBuilder();
+        for(int i = 0; i < statsArr.length(); i++) {
+            JSONObject statObject = statsArr.getJSONObject(i);
+            statsStringBuilder.append("\n" + formatJsonString(statObject.getJSONObject("stat").getString("name")) + ": " + statObject.getInt("base_stat"));
+        }
+
         String responseStr = String.format(formatJsonString(nameString) + "\n"
                                             + "Type: %s\n"
                                             + "Ability: %s\n"
-                                            + "Hidden Ability: %s",
+                                            + "Hidden Ability: %s\n"
+                                            + "Base stats: %s",
                                             typesStringBuilder.toString(), formatJsonString(abilityString),
-                                            formatJsonString(hiddenAbilityString));
+                                            formatJsonString(hiddenAbilityString), statsStringBuilder.toString());
 
         sendResponse(responseStr);
         sendSpriteResponse(spriteUrl);
