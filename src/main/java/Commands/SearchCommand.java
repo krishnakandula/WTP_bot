@@ -1,5 +1,7 @@
 package Commands;
 
+import Tasks.GetDataTask;
+import Tasks.GetPokemonStatsTask;
 import Tasks.GetPokemonTask;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Chat;
@@ -29,8 +31,10 @@ public class SearchCommand extends BotCommand {
         sendMessage.setChatId(chatId);
 
         if(arguments.length == 1) {
-            GetPokemonTask getPokemonTask = new GetPokemonTask(arguments[0], chatId, absSender);
-            Thread thread = new Thread(getPokemonTask);
+//            GetPokemonTask getPokemonTask = new GetPokemonTask(arguments[0], chatId, absSender);
+//            Thread thread = new Thread(getPokemonTask);
+            GetDataTask task = new GetPokemonStatsTask(arguments[0], chatId, absSender);
+            Thread thread = new Thread(task);
             thread.start();
         } else{
             if(arguments.length < 1)
