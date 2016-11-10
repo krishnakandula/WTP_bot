@@ -33,7 +33,7 @@ public class SearchCommand extends BotCommand {
         if(arguments.length == 1) {
 //            GetPokemonTask getPokemonTask = new GetPokemonTask(arguments[0], chatId, absSender);
 //            Thread thread = new Thread(getPokemonTask);
-            GetDataTask task = new GetPokemonStatsTask(arguments[0], chatId, absSender);
+            GetDataTask task = new GetPokemonStatsTask(arguments[0].toLowerCase(), chatId, absSender);
             Thread thread = new Thread(task);
             thread.start();
         } else{

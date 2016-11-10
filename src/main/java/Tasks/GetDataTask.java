@@ -1,6 +1,9 @@
 package Tasks;
 
+import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.bots.AbsSender;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.logging.BotLogger;
 
 import java.io.BufferedReader;
@@ -55,11 +58,24 @@ public abstract class GetDataTask implements Runnable{
     }
 
     protected void sendTextResponse(String response){
-        System.out.println(response);
+        SendMessage sendMessageRequest = new SendMessage();
+        sendMessageRequest.setChatId(chatId);
+        sendMessageRequest.setText(response);
+        try {
+            sender.sendMessage(sendMessageRequest);
+        } catch (TelegramApiException e){
+            BotLogger.error(e.getMessage(), LOG_TAG, e);
+        }
     }
 
     protected void sendPictureResponse(String pictureURL){
-        System.out.println(pictureURL);
+        SendPhoto sendSprite = new SendPhoto();
+        sendSprite.setChatId(chatId).setPhoto(pictureURL);
+        try{
+            sender.sendPhoto(sendSprite);
+        } catch (TelegramApiException e){
+            BotLogger.error(LOG_TAG, e.getMessage(), e);
+        }
     }
 
     protected String capitalizeFirstLetter(String str){
