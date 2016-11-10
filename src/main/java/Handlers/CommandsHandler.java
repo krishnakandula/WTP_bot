@@ -3,6 +3,7 @@ package Handlers;
 import Commands.AuthorCommand;
 import Commands.HelloCommand;
 import Commands.SearchCommand;
+import Commands.StatsCommand;
 import Config.BotConfig;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingCommandBot;
@@ -16,11 +17,12 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
         register(new HelloCommand());
         register(new AuthorCommand());
         register(new SearchCommand());
+        register(new StatsCommand());
     }
 
     @Override
     public void processNonCommandUpdate(Update update) {
-
+        //Do nothing
     }
 
     public String getBotUsername() {

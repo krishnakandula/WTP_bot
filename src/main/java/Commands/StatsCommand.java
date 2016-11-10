@@ -2,7 +2,6 @@ package Commands;
 
 import Tasks.GetDataTask;
 import Tasks.GetPokemonStatsTask;
-import Tasks.GetPokemonTask;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Chat;
 import org.telegram.telegrambots.api.objects.User;
@@ -11,16 +10,14 @@ import org.telegram.telegrambots.bots.commands.BotCommand;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.logging.BotLogger;
 
-import java.util.Arrays;
-
 /**
- * Created by krish on 11/6/2016.
+ * Created by krish on 11/10/2016.
  */
-public class SearchCommand extends BotCommand {
-    private static final String LOG_TAG = SearchCommand.class.getSimpleName();
+public class StatsCommand extends BotCommand {
+    private static final String LOG_TAG = StatsCommand.class.getSimpleName();
 
-    public SearchCommand(){
-        super("search", "search for a Pokémon");
+    public StatsCommand(){
+        super("stats", "get the base stats for a Pokémon");
     }
 
     @Override
@@ -28,8 +25,8 @@ public class SearchCommand extends BotCommand {
         String chatId = chat.getId().toString();
 
         if(arguments.length == 1) {
-            GetPokemonTask getPokemonTask = new GetPokemonTask(arguments[0], chatId, absSender);
-            Thread thread = new Thread(getPokemonTask);
+            GetDataTask task = new GetPokemonStatsTask(arguments[0].toLowerCase(), chatId, absSender);
+            Thread thread = new Thread(task);
             thread.start();
         } else{
             SendMessage sendMessage = new SendMessage();
@@ -46,5 +43,4 @@ public class SearchCommand extends BotCommand {
             }
         }
     }
-
 }

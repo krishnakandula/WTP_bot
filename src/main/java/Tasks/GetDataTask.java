@@ -1,5 +1,7 @@
 package Tasks;
 
+import org.telegram.telegrambots.api.methods.ActionType;
+import org.telegram.telegrambots.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.bots.AbsSender;
@@ -25,6 +27,13 @@ public abstract class GetDataTask implements Runnable{
     protected abstract void parseResponse(String jsonString);
 
     public void run() {
+        SendChatAction chatAction = new SendChatAction();
+        chatAction.setChatId(chatId).setAction(ActionType.TYPING);
+        try{
+            sender.sendChatAction(chatAction);
+        } catch(TelegramApiException e){
+            BotLogger.error(e.getMessage(), LOG_TAG, e);
+        }
         doInBackground();
     }
 
