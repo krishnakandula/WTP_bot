@@ -28,7 +28,7 @@ public class SearchCommand extends BotCommand {
         String chatId = chat.getId().toString();
 
         if(arguments.length == 1) {
-            GetPokemonTask getPokemonTask = new GetPokemonTask(arguments[0], chatId, absSender);
+            GetPokemonTask getPokemonTask = new GetPokemonTask(arguments[0].toLowerCase(), chatId, absSender);
             Thread thread = new Thread(getPokemonTask);
             thread.start();
         } else{
