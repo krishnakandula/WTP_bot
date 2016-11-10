@@ -54,10 +54,15 @@ public class GetPokemonTask extends GetDataTask {
 
         JSONObject mainObj = new JSONObject(jsonString);
         String nameString = mainObj.getJSONArray(formsArrKey).getJSONObject(0).getString(pokemonNameKey);
-        JSONArray abilitiesObj = mainObj.getJSONArray(abilityArrKey);
-        String abilityString = abilitiesObj.getJSONObject(1).getJSONObject(abilityObjKey).getString(abilityNameKey);
-        String hiddenAbilityString = abilitiesObj.getJSONObject(0).getJSONObject(abilityObjKey).getString(abilityNameKey);
+        JSONArray abilitiesArr = mainObj.getJSONArray(abilityArrKey);
         JSONArray typesArr = mainObj.getJSONArray("types");
+
+        StringBuilder abilityString = new StringBuilder("");
+        int l = abilitiesArr.length();
+        for(int i = 0; i < abilitiesArr.length(); i++){
+            if(!abilitiesArr.getJSONObject(i).getBoolean("is_hidden"))
+                abilityString.append(abilitiesArr.getJSONObject(i).getJSONObject(abilityObjKey).getString(abilityNameKey));
+        }
 
         //Get types
         StringBuilder typesStringBuilder = new StringBuilder();
@@ -70,10 +75,8 @@ public class GetPokemonTask extends GetDataTask {
 
         String responseStr = String.format(capitalizeFirstLetter(nameString) + "\n"
                                             + "Type: %s\n"
-                                            + "Ability: %s\n"
-                                            + "Hidden Ability: %s\n",
-                                            typesStringBuilder.toString(), capitalizeFirstLetter(abilityString),
-                                            capitalizeFirstLetter(hiddenAbilityString));
+                                            + "Ability: %s\n",
+                                            typesStringBuilder.toString(), capitalizeFirstLetter(abilityString.toString()));
 
         sendTextResponse(responseStr);
         sendPictureResponse(spriteUrl);
@@ -83,6 +86,7 @@ public class GetPokemonTask extends GetDataTask {
     private String buildBaseURL(String id){
         StringBuilder baseURL = new StringBuilder(BASE_URL);
         baseURL.append(ENDPOINT).append(id).append("/");
+        System.out.println(baseURL);
         return baseURL.toString();
     }
 }
